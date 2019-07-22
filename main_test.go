@@ -33,8 +33,9 @@ func TestEmptyTable(t *testing.T) {
     req, _ := http.NewRequest("GET", "/cart", nil)
     response := executeRequest(req)
     checkResponseCode(t, http.StatusOK, response.Code)
-    if body := response.Body.String(); body != "[]" {
-        t.Errorf("Expected an empty array. Got %s", body)
+    fmt.Println(response)
+    if body := response.Body.String(); body != "" {
+        t.Errorf("Expected nil. Got %s", body)
     }
 }
 
@@ -52,12 +53,12 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 
 func TestGetNonExistentTrx(t *testing.T) {
     clearTable()
-    req, _ := http.NewRequest("GET", "/cart/45", nil)
+    req, _ := http.NewRequest("GET", "/cart/1", nil)
     response := executeRequest(req)
     checkResponseCode(t, http.StatusNotFound, response.Code)
     var m map[string]string
     json.Unmarshal(response.Body.Bytes(), &m)
-    if m["error"] != "Trx not found" {
+    if m["error"] != "Cart not found" {
         t.Errorf("Expected the 'error' key of the response to be set to 'Trx not found'. Got '%s'", m["error"])
     }
 }
@@ -65,26 +66,24 @@ func TestGetNonExistentTrx(t *testing.T) {
 func addItemCart(item_name string, num_of_item int, total_price int) {
 
     statement := fmt.Sprintf("INSERT INTO cart(item_name, num_of_item, total_price) VALUES('%s', %d, %d)", item_name, num_of_item, total_price)
+    fmt.Println(statement)
     a.DB.Exec(statement)
 }
 
 func TestCreateTrx(t *testing.T) {
     clearTable()
-    var item_name = "laptop"
-    var total_price = "12000000"
-    var num_of_item = "1"
-    var payloadString = "{item_name:" + item_name + "," + "total_price:" + total_price + "num_of_item:" + num_of_item + "}"
-    fmt.Println(payloadString)
-    payload := []byte(payloadString)
+    //var payloadString = '`{"item_name": "' + item_name + '", "total_price": ' + total_price + ', "num_of_item":' + num_of_item + "}`"
+    //fmt.Println(payloadString)
+    payload := []byte(`{"item_name":"laptop/handphone","total_price":17000000, "num_of_item":2}`)
     req, _ := http.NewRequest("POST", "/cart", bytes.NewBuffer(payload))
 
     //fmt.Println(req)
     response := executeRequest(req)
-    fmt.Println(response)
+    //fmt.Println(response)
     checkResponseCode(t, http.StatusCreated, response.Code)
     var m map[string]interface{}
     json.Unmarshal(response.Body.Bytes(), &m)
-    if m["item_name"] != "laptop" {
+    if m["item_name"] != "laptop/handphone" {
         t.Errorf("Expected item name to be 'laptop'. Got '%v'", m["item_name"])
     }
     // the id is compared to 1.0 because JSON unmarshaling converts numbers to
