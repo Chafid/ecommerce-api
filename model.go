@@ -34,7 +34,7 @@ func (p *cart) getCart(db *sql.DB) ([]cart, error) {
     return items, nil
 }
 func (p *cart) updateCart(db *sql.DB) error {
-    _, err := db.Exec("UPDATE cart SET item_name=?, total_price=?, num_of_item=? WHERE id=? and cart_id=?", p.ItemName, p.Total, p.NumItem, p.ID, p.CartId)
+    _, err := db.Exec("UPDATE cart SET total_price=?, num_of_item=? WHERE id=? and cart_id=?", p.Total, p.NumItem, p.ID, p.CartId)
     return err
 }
 

@@ -74,6 +74,12 @@ func (a *App) createCart(w http.ResponseWriter, r *http.Request) {
 func (a *App) updateCart(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
+	fmt.Println(id)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid item ID")
+		return
+	}
+	cart_id, err := strconv.Atoi(vars["cart_id"])
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid cart ID")
 		return
@@ -87,6 +93,7 @@ func (a *App) updateCart(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	p.ID = id
+	p.CartId = cart_id
 
 	if err := p.updateCart(a.DB); err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -125,7 +132,7 @@ func (a *App) deleteCart(w http.ResponseWriter, r *http.Request) {
 func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/cart", a.createCart).Methods("POST")
 	a.Router.HandleFunc("/cart/{cart_id}", a.getCart).Methods("GET")
-	a.Router.HandleFunc("/cart/{cart_id}", a.updateCart).Methods("PUT")
+	a.Router.HandleFunc("/cart/{cart_id}/{id}", a.updateCart).Methods("PUT")
 	a.Router.HandleFunc("/cart/{cart_id}/{id}", a.deleteCart).Methods("DELETE")
 }
 
